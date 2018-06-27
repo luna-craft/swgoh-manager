@@ -1,0 +1,8 @@
+<h1>{{ player.guild.name }} - {{ player.player_name }}</h1>
+{% if units %}
+    {% for unit in units %}
+        <a href="/manager/{{ player.id }}/unit/{{ unit.id }}"><img src="http:{{ unit.character.image }}" alt="{{ unit.character.name }}" title="{{ unit.character.name }}"></a></li>
+    {% endfor %}
+{% else %}
+    <p>No units are available.</p>
+{% endif %}
