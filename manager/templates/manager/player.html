@@ -1,7 +1,13 @@
+{% load static %}
+
 <h1>{{ player.guild.name }} - {{ player.player_name }}</h1>
 {% if units %}
     {% for unit in units %}
-        <a href="/manager/{{ player.id }}/unit/{{ unit.id }}"><img src="http:{{ unit.character.image }}" alt="{{ unit.character.name }}" title="{{ unit.character.name }}"></a></li>
+    <div class="unit-preview">	    
+	    <table><tr><td><a href="/manager/{{ player.id }}/unit/{{ unit.id }}"><img src="{% static 'manager/images/tex.charui_sion.png' %}" alt="{{ unit.character.name }}" title="{{ unit.character.name }}"></a></li></td></tr>
+		    <tr><td>{{ unit.character.name }}</td></tr>
+		    <tr><td>{{ unit.rarity }}<i class="fa fa-star"></i> {{  unit.gear_level }}<i class="fa fa-cog"></i> {{ unit.level }}<i class="fa fa-angle-double-up"></i> {{ unit.power }}<i class="fa fa-bolt last"></i></td></tr></table>
+    </div>
     {% endfor %}
 {% else %}
     <p>No units are available.</p>

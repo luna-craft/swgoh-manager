@@ -11,35 +11,23 @@ def update_character_database():
     response = requests.get('https://swgoh.gg/api/characters')
     json_data = response.json()
     for idx, c in enumerate(json_data):
-        found = Character.objects.filter(base_id=c['base_id'])
-        if len(found) == 0:
-            character = Character(base_id=c['base_id'], name=c['name'], power=c['power'], description=c['description'], url=c['url'], image=c['image'], combat_type=c['combat_type'])
-        else:
-            character = found[0]
-            character.name = c['name']
-            character.power = c['power']
-            character.description = c['description']
-            character.url = c['url']
-            character.image = c['image']
-            character.combat_type = c['combat_type']
-        character.save()
+        char, created = Character.objects.update_or_create(base_id=c['base_id'], defaults={'base_id': c['base_id'], 'name': c['name'], 
+            'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][29:], 'combat_type': c['combat_type']})    
+        # обновить картинку
+        #r = s.get('http:' + char.image, stream=True)
+        #if r.status_code == 200:
+        #    with open("manager/static/manager/images/" + char.image[29:], 'wb') as f:
+        #        r.raw.decode_content = True
+        #        shutil.copyfileobj(r.raw, f)
+        #    print("Сохранил " + char.base_id)
+        
     # загрузить базу данных кораблей
     response = requests.get('https://swgoh.gg/api/ships')
     json_data = response.json()
     for c in json_data:
-        found = Character.objects.filter(base_id=c['base_id'])
-        if len(found) == 0:
-            character = Character(base_id=c['base_id'], name=c['name'], power=c['power'], description=c['description'], url=c['url'], image=c['image'], combat_type=c['combat_type'])
-        else:
-            character = found[0]
-            character.name = c['name']
-            character.power = c['power']
-            character.description = c['description']
-            character.url = c['url']
-            character.image = c['image']
-            character.combat_type = c['combat_type']
-        character.save()
-
+        char, created = Character.objects.update_or_create(base_id=c['base_id'], defaults={'base_id': c['base_id'], 'name': c['name'], 
+            'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][29:], 'combat_type': c['combat_type']})    
+  
 
 #response = requests.get('https://swgoh.gg/api/guilds/34508/units')
 #json_data = response.json()
