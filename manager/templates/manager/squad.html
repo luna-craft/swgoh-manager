@@ -1,0 +1,54 @@
+{% load static %}
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+
+<h3>Squad: {{ squad.name }} [{{ squad.category }}]</h3>
+<table border=1 width="100%">
+    <thead>
+        <td>Player</td>
+        <td>{{ squad.char3.name }}</td>
+        <td>{{ squad.char2.name }}</td>
+        <td>{{ squad.char3.name }}</td>
+        <td>{{ squad.char4.name }}</td>
+        <td>{{ squad.char5.name }}</td>
+        <td>Total power</td>
+    </thead>
+    <tbody>
+        {% for unit in units %}
+        <tr>
+            <td>{{ unit.player.player_name }}</td>
+
+            {% if unit.char1 %}
+            <td>{{ unit.char1.rarity }}<i class="fa fa-star"></i> {{ unit.char1.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char1.gear_level }}<i class="fa fa-cog"></i> {{ unit.char1.power }}<i class="fa fa-bolt last"></i></td>
+            {% else %}
+            <td>&nbsp;</td>
+            {% endif %}
+
+            {% if unit.char2 %}
+            <td>{{ unit.char2.rarity }}<i class="fa fa-star"></i> {{ unit.char2.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char2.gear_level }}<i class="fa fa-cog"></i> {{ unit.char2.power }}<i class="fa fa-bolt last"></i></td>
+            {% else %}
+            <td>&nbsp;</td>
+            {% endif %}
+
+            {% if unit.char3 %}
+            <td>{{ unit.char3.rarity }}<i class="fa fa-star"></i> {{ unit.char3.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char3.gear_level }}<i class="fa fa-cog"></i> {{ unit.char3.power }}<i class="fa fa-bolt last"></i></td>
+            {% else %}
+            <td>&nbsp;</td>
+            {% endif %}
+
+            {% if unit.char4 %}
+            <td>{{ unit.char4.rarity }}<i class="fa fa-star"></i> {{ unit.char4.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char4.gear_level }}<i class="fa fa-cog"></i> {{ unit.char4.power }}<i class="fa fa-bolt last"></i></td>
+            {% else %}
+            <td>&nbsp;</td>
+            {% endif %}
+
+            {% if unit.char5 %}
+            <td>{{ unit.char5.rarity }}<i class="fa fa-star"></i> {{ unit.char5.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char5.gear_level }}<i class="fa fa-cog"></i> {{ unit.char5.power }}<i class="fa fa-bolt last"></i></td>
+            {% else %}
+            <td>&nbsp;</td>
+            {% endif %}
+
+            <td>{{ unit.power }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
