@@ -25,7 +25,8 @@ class Player(models.Model):
     active = models.BooleanField(default=False)    # признак что пользователь активен
     def __str__(self):
         return "%s [%s]" % (self.player_name, self.guild.name)
-
+    class Meta:
+        ordering = ['player_name']
 
 class Character(models.Model):
     base_id = models.CharField(max_length=200)     # код персонажа на swgoh.gg
@@ -37,6 +38,8 @@ class Character(models.Model):
     image = models.CharField(max_length=300)       # картинка на swgoh.gg
     def __str__(self):
         return self.name
+    class Meta:
+        ordering = ['name']
 
 
 class Unit(models.Model):
@@ -47,5 +50,32 @@ class Unit(models.Model):
     level = models.IntegerField(default=0)         # уровень персонажа
     rarity = models.IntegerField(default=0)        # редкость персонажа
     def __str__(self):
-        return "%s (%s)" % (self.character, self.player)
+        return "%s (%s)" % (self.character, self.player)    
+    class Meta:
+        ordering = ['character__name']
+
+
+class Squad(models.Model):
+    name = models.CharField(max_length=200)
+    SQUAD_CATEGORY = (
+            ('other', 'Другое'),
+            ('arena', 'Арена'),
+            ('raid-rancor', 'Рейд: Ранкор'),
+            ('raid-aat', 'Рейд: AAT'),
+            ('raid-sith', 'Рейд: Триумвират ситхов'),
+            ('lstb', 'Светлые территориальные битвы'),
+            ('dstb', 'Темные территориальные битвы'),
+            ('tw-offense', 'Войны гильдий: Атака'),
+            ('tw-defense', 'Войны шильдий: Защита'),
+            )
+    category = models.CharField(max_length=50, choices=SQUAD_CATEGORY,default='other')
+    char1 = models.ForeignKey(Character, related_name='char1', verbose_name='Character 1', blank=True, null=True, on_delete=models.SET_NULL)
+    char2 = models.ForeignKey(Character, related_name='char2', verbose_name='Character 2', blank=True, null=True, on_delete=models.SET_NULL)
+    char3 = models.ForeignKey(Character, related_name='char3', verbose_name='Character 3', blank=True, null=True, on_delete=models.SET_NULL)
+    char4 = models.ForeignKey(Character, related_name='char4', verbose_name='Character 4', blank=True, null=True, on_delete=models.SET_NULL)
+    char5 = models.ForeignKey(Character, related_name='char5', verbose_name='Character 5', blank=True, null=True, on_delete=models.SET_NULL)
+    def __str__(self):
+        return "%s - %s [%s, %s, %s, %s, %s]" % (self.name, self.category, self.char1, self.char2, self.char3, self.char4, self.char5)
+    class Meta:
+        ordering = ['name']
 

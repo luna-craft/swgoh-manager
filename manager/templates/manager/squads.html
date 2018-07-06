@@ -1,0 +1,25 @@
+<h1>Squads</h1>
+<table border=1 width="100%">
+	<thead>
+		<td>Name</td>
+		<td>Category</td>
+		<td>Character 1</td>
+		<td>Character 2</td>
+		<td>Character 3</td>
+		<td>Character 4</td>
+		<td>Character 5</td>
+	</thead>
+	<tbody>
+		{% for squad in squads %}
+		<tr>
+			<td><a href="{% url 'squad' squad.id %}">{{ squad.name }}</a></td>
+			<td>{{ squad.category }}</td>
+			<td>{{ squad.char1 }}</td>
+			<td>{{ squad.char2 }}</td>
+			<td>{{ squad.char3 }}</td>
+			<td>{{ squad.char4 }}</td>
+			<td>{{ squad.char5 }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
