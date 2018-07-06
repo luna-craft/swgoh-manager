@@ -11,8 +11,8 @@ def update_character_database():
     response = requests.get('https://swgoh.gg/api/characters')
     json_data = response.json()
     for idx, c in enumerate(json_data):
-        char, created = Character.objects.update_or_create(base_id=c['base_id'], defaults={'base_id': c['base_id'], 'name': c['name'], 
-            'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][29:], 'combat_type': c['combat_type']})    
+        char, created = Character.objects.update_or_create(base_id=c['base_id'], defaults={'base_id': c['base_id'], 'name': c['name'],
+            'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][29:], 'combat_type': c['combat_type']})
         # обновить картинку
         #r = s.get('http:' + char.image, stream=True)
         #if r.status_code == 200:
@@ -20,14 +20,14 @@ def update_character_database():
         #        r.raw.decode_content = True
         #        shutil.copyfileobj(r.raw, f)
         #    print("Сохранил " + char.base_id)
-        
+
     # загрузить базу данных кораблей
     response = requests.get('https://swgoh.gg/api/ships')
     json_data = response.json()
     for c in json_data:
-        char, created = Character.objects.update_or_create(base_id=c['base_id'], defaults={'base_id': c['base_id'], 'name': c['name'], 
-            'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][29:], 'combat_type': c['combat_type']})    
-  
+        char, created = Character.objects.update_or_create(base_id=c['base_id'], defaults={'base_id': c['base_id'], 'name': c['name'],
+            'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][29:], 'combat_type': c['combat_type']})
+
 
 #response = requests.get('https://swgoh.gg/api/guilds/34508/units')
 #json_data = response.json()
@@ -121,3 +121,15 @@ def update_guilds():
     for guild in Guild.objects.all():
         if guild.active:
             update_guild(guild)
+
+
+def update_squads_totals(guild):
+    # Обновить данные по пачкам
+    for squad in Squad.objects.all():
+        squad.total_useful = 0
+        data = squad.populate_units(guild)
+        # Отфильтровать по мощи
+        squad.total_useful = len([v for v in data.values() if v['useful']])
+        squad.save()
+        print("Обновлена пачка %s" % squad)
+

@@ -1,50 +1,54 @@
 {% load static %}
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+<link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
-<h3>Squad: {{ squad.name }} [{{ squad.category }}]</h3>
+<h1>Squad: {{ squad.name }} [{{ squad.category }}] / {{ guild.name }}</h1>
+<p><a href="{% url 'squads' %}">&lt;&lt;&lt; back to squads</a></p>
 <table border=1 width="100%">
     <thead>
+        <td>#</td>
         <td>Player</td>
-        <td>{{ squad.char3.name }}</td>
-        <td>{{ squad.char2.name }}</td>
-        <td>{{ squad.char3.name }}</td>
-        <td>{{ squad.char4.name }}</td>
-        <td>{{ squad.char5.name }}</td>
+        <td><a href="{{ squad.char1.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char1.name }}</a></td>
+        <td><a href="{{ squad.char2.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char2.name }}</a></td>
+        <td><a href="{{ squad.char3.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char3.name }}</a></td>
+        <td><a href="{{ squad.char4.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char4.name }}</a></td>
+        <td><a href="{{ squad.char5.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char5.name }}</a></td>
         <td>Total power</td>
     </thead>
     <tbody>
         {% for unit in units %}
-        <tr>
-            <td>{{ unit.player.player_name }}</td>
+        <tr {% if unit.useful %}class = "useful"{% elif unit.power == 0 %}class = "absent"{% else %}class = "nonuseful"{% endif%}>
+            <td>{{ forloop.counter }}</td>
+            <td><a href="{% url 'player' unit.player.id %}">{{ unit.player.player_name }}</a></td>
 
             {% if unit.char1 %}
-            <td>{{ unit.char1.rarity }}<i class="fa fa-star"></i> {{ unit.char1.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char1.gear_level }}<i class="fa fa-cog"></i> {{ unit.char1.power }}<i class="fa fa-bolt last"></i></td>
+            <td {% if unit.char1.power < 6000 %}class = "absent"{% endif %}>{{ unit.char1.rarity }}<i class="fa fa-star"></i> {{ unit.char1.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char1.gear_level }}<i class="fa fa-cog"></i> {{ unit.char1.power }}<i class="fa fa-bolt last"></i></td>
             {% else %}
-            <td>&nbsp;</td>
+            <td {% if squad.char1 %}class = "absent"{% endif %}>&nbsp;</td>
             {% endif %}
 
             {% if unit.char2 %}
-            <td>{{ unit.char2.rarity }}<i class="fa fa-star"></i> {{ unit.char2.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char2.gear_level }}<i class="fa fa-cog"></i> {{ unit.char2.power }}<i class="fa fa-bolt last"></i></td>
+            <td {% if unit.char2.power < 6000 %}class = "absent"{% endif %}>{{ unit.char2.rarity }}<i class="fa fa-star"></i> {{ unit.char2.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char2.gear_level }}<i class="fa fa-cog"></i> {{ unit.char2.power }}<i class="fa fa-bolt last"></i></td>
             {% else %}
-            <td>&nbsp;</td>
+            <td {% if squad.char2 %}class = "absent"{% endif %}>&nbsp;</td>
             {% endif %}
 
             {% if unit.char3 %}
-            <td>{{ unit.char3.rarity }}<i class="fa fa-star"></i> {{ unit.char3.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char3.gear_level }}<i class="fa fa-cog"></i> {{ unit.char3.power }}<i class="fa fa-bolt last"></i></td>
+            <td {% if unit.char3.power < 6000 %}class = "absent"{% endif %}>{{ unit.char3.rarity }}<i class="fa fa-star"></i> {{ unit.char3.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char3.gear_level }}<i class="fa fa-cog"></i> {{ unit.char3.power }}<i class="fa fa-bolt last"></i></td>
             {% else %}
-            <td>&nbsp;</td>
+            <td {% if squad.char3 %}class = "absent"{% endif %}>&nbsp;</td>
             {% endif %}
 
             {% if unit.char4 %}
-            <td>{{ unit.char4.rarity }}<i class="fa fa-star"></i> {{ unit.char4.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char4.gear_level }}<i class="fa fa-cog"></i> {{ unit.char4.power }}<i class="fa fa-bolt last"></i></td>
+            <td {% if unit.char4.power < 6000 %}class = "absent"{% endif %}>{{ unit.char4.rarity }}<i class="fa fa-star"></i> {{ unit.char4.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char4.gear_level }}<i class="fa fa-cog"></i> {{ unit.char4.power }}<i class="fa fa-bolt last"></i></td>
             {% else %}
-            <td>&nbsp;</td>
+            <td {% if squad.char4 %}class = "absent"{% endif %}>&nbsp;</td>
             {% endif %}
 
             {% if unit.char5 %}
-            <td>{{ unit.char5.rarity }}<i class="fa fa-star"></i> {{ unit.char5.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char5.gear_level }}<i class="fa fa-cog"></i> {{ unit.char5.power }}<i class="fa fa-bolt last"></i></td>
+            <td {% if unit.char5.power < 6000 %}class = "absent"{% endif %}>{{ unit.char5.rarity }}<i class="fa fa-star"></i> {{ unit.char5.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char5.gear_level }}<i class="fa fa-cog"></i> {{ unit.char5.power }}<i class="fa fa-bolt last"></i></td>
             {% else %}
-            <td>&nbsp;</td>
+            <td {% if squad.char5 %}class = "absent"{% endif %}>&nbsp;</td>
             {% endif %}
 
             <td>{{ unit.power }}</td>

@@ -1,0 +1,6 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
+
+<h1>Character: {{ character.name }}</h1>
+<img src="{% static character.image %}" alt="{{ character.name }}"/>
+<p>{{ character.description }}</p>

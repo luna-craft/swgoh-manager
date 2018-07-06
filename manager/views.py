@@ -10,6 +10,14 @@ def index(request):
     return render(request, 'manager/index.html', context)
 
 
+def character(request, character_id):
+    try:
+        character = Character.objects.get(pk=character_id)
+    except Character.DoesNotExist:
+        raise Http404("Character does not exist")
+    return render(request, 'manager/character.html', {'character': character})
+
+
 def player(request, player_id):
     try:
         player = Player.objects.get(pk=player_id)
@@ -53,31 +61,15 @@ def squad_json(request, squad_id):
     return JsonResponse(jsondata)
 
 
-def populate_units(character, idx, data):
-    if character == None:
-        return data
-    units = Unit.objects.filter(character=character)
-    for unit in units:
-        item = data.get(unit.player.id)
-        if item == None:
-            item = {'player': unit.player, 'char1': None, 'char2': None, 'char3': None, 'char4': None, 'char5': None, 'power': 0}
-            data[unit.player.id] = item
-        item['char%d' % idx] = unit
-        item['power'] = item['power'] + unit.power
-    return data
-
-
 def squad(request, squad_id):
     try:
+        guild = Guild.objects.filter(active=True)[0]
         squad = Squad.objects.get(pk=squad_id)
-        data = {}
-        populate_units(squad.char1, 1, data)
-        populate_units(squad.char2, 2, data)
-        populate_units(squad.char3, 3, data)
-        populate_units(squad.char4, 4, data)
-        populate_units(squad.char5, 5, data)
+        data = squad.populate_units(guild)
         # Отсортировать по мощи пачки
         sorted_data = sorted(data.values(), key=lambda k: k['power'], reverse=True)
+    except Guild.DoesNotExist:
+        raise Http404("No active guild")
     except Squad.DoesNotExist:
         raise Http404("Squad does not exist")
-    return render(request, 'manager/squad.html', {'squad': squad, 'units': sorted_data})
+    return render(request, 'manager/squad.html', {'guild': guild, 'squad': squad, 'units': sorted_data})
