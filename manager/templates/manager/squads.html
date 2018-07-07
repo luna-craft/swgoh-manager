@@ -1,28 +1,29 @@
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
-<h1>Squads</h1>
+<h1>Отряды / {{ guild.name }}</h1>
+<p><a href="{% url 'players' %}">Список игроков</a></p>
 <table border=1 width="100%">
 	<thead>
-		<td>Name</td>
-		<td>Category</td>
-		<td>Character 1</td>
-		<td>Character 2</td>
-		<td>Character 3</td>
-		<td>Character 4</td>
-		<td>Character 5</td>
-		<td>Total useful</td>
+		<td>Название</td>
+		<td>Категория</td>
+		<td>Персонаж 1</td>
+		<td>Персонаж 2</td>
+		<td>Персонаж 3</td>
+		<td>Персонаж 4</td>
+		<td>Персонаж 5</td>
+		<td>Всего готовых</td>
 	</thead>
 	<tbody>
 		{% for squad in squads %}
-		<tr>
+		<tr {% if squad.total_useful %}class = "useful"{% else %}class = "nonuseful"{% endif%}>
 			<td><a href="{% url 'squad' squad.id %}">{{ squad.name }}</a></td>
 			<td>{{ squad.category }}</td>
-			<td>{{ squad.char1 }}</td>
-			<td>{{ squad.char2 }}</td>
-			<td>{{ squad.char3 }}</td>
-			<td>{{ squad.char4 }}</td>
-			<td>{{ squad.char5 }}</td>
+			<td>{% if squad.char1 %}{{ squad.char1 }}{% else %}&nbsp;{% endif %}</td>
+			<td>{% if squad.char2 %}{{ squad.char2 }}{% else %}&nbsp;{% endif %}</td>
+			<td>{% if squad.char3 %}{{ squad.char3 }}{% else %}&nbsp;{% endif %}</td>
+			<td>{% if squad.char4 %}{{ squad.char4 }}{% else %}&nbsp;{% endif %}</td>
+			<td>{% if squad.char5 %}{{ squad.char5 }}{% else %}&nbsp;{% endif %}</td>
 			<td>{{ squad.total_useful }}</td>
 		</tr>
 		{% endfor %}

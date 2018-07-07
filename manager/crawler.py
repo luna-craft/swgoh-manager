@@ -95,14 +95,14 @@ def update_guild(guild):
         login = p[0].attrib['href'][3:-1]
         found = Player.objects.filter(swgoh_name=login)
         if len(found) == 0:
-                player = Player(player_name=name, swgoh_name=login, guild=guild, active=True)
-                players_added = players_added + 1
+            player = Player(player_name=name, swgoh_name=login, guild=guild, active=True)
+            players_added = players_added + 1
         else:
-                player = found[0]
-                player.player_name = name
-                player.active = True
-                player.guild = guild # он мог быть в другой ги
-                players_updated = players_updated + 1
+            player = found[0]
+            player.player_name = name
+            player.active = True
+            player.guild = guild # он мог быть в другой ги
+            players_updated = players_updated + 1
     print("Обновление данных игроков гильдии %s завершено. Игроков добавлено %d, обновлено %d" % (guild, players_added, players_updated))
     # убрать игроков которые уже не в ги
     for player in Player.objects.filter(guild=guild):
@@ -133,3 +133,14 @@ def update_squads_totals(guild):
         squad.save()
         print("Обновлена пачка %s" % squad)
 
+
+def update_players_totals(guild):
+    # Обновить счетчики по игрокам
+    for player in Player.objects.filter(guild=guild):
+        player.total_power = 0
+        player.total_chars = 0
+        for unit in Unit.objects.filter(player=player):
+            player.total_power = player.total_power + unit.power
+            player.total_chars = player.total_chars + 1
+        print("Обновлена статистика по игроку %s - power = %d, chars = %d" % (player, player.total_power, player.total_chars))
+        player.save()

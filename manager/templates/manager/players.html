@@ -1,0 +1,25 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
+
+<h1>Готовность игроков / {{ guild.name }}</h1>
+<p><a href="{% url 'squads' %}">Список отрядов</a></p>
+<table border=1 width="100%">
+  <thead>
+    <td>#</td>
+    <td>Игрок</td>
+    <td>ГМ</td>
+    <td>Персонажей</td>
+    <td>Готовых отрядов</td>
+  </thead>
+  <tbody>
+    {% for player in players %}
+    <tr {% if not player.total_chars %}class = "absent"{% endif%}>
+      <td>{{ forloop.counter }}</td>
+      <td><a href="{% url 'player' player.id %}">{{ player.player_name }}</a></td>
+      <td>{{ player.total_power }}</td>
+      <td>{{ player.total_chars }}</td>
+      <td>{{ player.total_useful }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

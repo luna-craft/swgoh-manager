@@ -23,6 +23,9 @@ class Player(models.Model):
     #
     guild = models.ForeignKey(Guild, on_delete=models.CASCADE)
     active = models.BooleanField(default=False)    # признак что пользователь активен
+    total_power = models.IntegerField(default=0)   # общая ГМ
+    total_chars = models.IntegerField(default=0)   # всего персонажей на складе
+    total_useful = models.IntegerField(default=0)  # количество годных пачек для ВГ
     def __str__(self):
         return "%s [%s]" % (self.player_name, self.guild.name)
     class Meta:
@@ -70,6 +73,7 @@ class Squad(models.Model):
             ('tw-defense', 'Войны шильдий: Защита'),
             )
     category = models.CharField(max_length=50, choices=SQUAD_CATEGORY, default='other')
+    description = models.TextField(blank=True)
     char1 = models.ForeignKey(Character, related_name='char1', verbose_name='Character 1', blank=True, null=True, on_delete=models.SET_NULL)
     char2 = models.ForeignKey(Character, related_name='char2', verbose_name='Character 2', blank=True, null=True, on_delete=models.SET_NULL)
     char3 = models.ForeignKey(Character, related_name='char3', verbose_name='Character 3', blank=True, null=True, on_delete=models.SET_NULL)
@@ -93,22 +97,51 @@ class Squad(models.Model):
             count = count + 1
         return count
 
-    def _populate_players(self, guild):
+    def _default_squad(self, player, can_require=False, required_units=[]):
+        return {'squad': self, 'player': player,
+                'char1': None, 'char1_require': can_require and not self.char1 in required_units, 'char1_useful': False,
+                'char2': None, 'char2_require': can_require and not self.char2 in required_units, 'char2_useful': False,
+                'char3': None, 'char3_require': can_require and not self.char3 in required_units, 'char3_useful': False,
+                'char4': None, 'char4_require': can_require and not self.char4 in required_units, 'char4_useful': False,
+                'char5': None, 'char5_require': can_require and not self.char5 in required_units, 'char5_useful': False,
+                'power': 0, 'useful': False}
+
+    def _populate_players(self, guild=None, player=None, can_require=False, required_units={}):
         data = {}
-        for player in Player.objects.filter(guild=guild):#, active=True):
-            data[player.id] = {'player': player, 'char1': None, 'char2': None, 'char3': None, 'char4': None, 'char5': None, 'power': 0, 'useful': False}
+        if player:
+            ru = [ru.character for ru in required_units[player]]
+            data[player.id] = self._default_squad(player, can_require=can_require, required_units=ru)
+        elif guild:
+            for player in Player.objects.filter(guild=guild):#, active=True):
+                if required_units.get(player):
+                    ru = [ru.character for ru in required_units[player]]
+                else:
+                    ru = []
+                data[player.id] = self._default_squad(player, can_require=can_require, required_units=ru)
         return data
 
-    def _populate_units(self, character, idx, data):
+    def _populate_units(self, character, idx, data, player=None, can_require=False, required_units={}):
         if character == None:
             return data
-        units = Unit.objects.filter(character=character)
+        if player:
+            units = Unit.objects.filter(character=character, player=player)
+        else:
+            units = Unit.objects.filter(character=character)
         for unit in units:
             item = data.get(unit.player.id)
             if item == None:
-                item = {'player': unit.player, 'char1': None, 'char2': None, 'char3': None, 'char4': None, 'char5': None, 'power': 0, 'useful': False}
+                item = self._default_squad(player, can_require=can_require, required_units=required_units)
                 data[unit.player.id] = item
             item['char%d' % idx] = unit
+
+            # Проверить что персонажа можно назначить в задания по прокачке
+            if can_require and required_units.get(unit.player):
+                ru = [ru for ru in required_units[unit.player] if ru.character == unit.character]
+                if not len(ru):
+                    item['char%d_require' % idx] = False
+                else:
+                    item['char%d_require' % idx] = (ru[0].rarity > unit.rarity) or (ru[0].gear_level > unit.gear_level)
+            # вычислить готовность item['char%d_useful' % idx] = False
             item['power'] = item['power'] + unit.power
         return data
 
@@ -151,14 +184,14 @@ class Squad(models.Model):
             return False
         return True
 
-    def populate_units(self, guild):
-        data = self._populate_players(guild)
+    def populate_units(self, guild=None, player=None, can_require=False, required_units={}):
+        data = self._populate_players(guild=guild, player=player, can_require=can_require, required_units=required_units)
         print("Загружено игроков: %d" % len(data.keys()))
-        self._populate_units(self.char1, 1, data)
-        self._populate_units(self.char2, 2, data)
-        self._populate_units(self.char3, 3, data)
-        self._populate_units(self.char4, 4, data)
-        self._populate_units(self.char5, 5, data)
+        self._populate_units(self.char1, 1, data, player=player, can_require=can_require, required_units=required_units)
+        self._populate_units(self.char2, 2, data, player=player, can_require=can_require, required_units=required_units)
+        self._populate_units(self.char3, 3, data, player=player, can_require=can_require, required_units=required_units)
+        self._populate_units(self.char4, 4, data, player=player, can_require=can_require, required_units=required_units)
+        self._populate_units(self.char5, 5, data, player=player, can_require=can_require, required_units=required_units)
         # Проверить полезность
         for unit in data.values():
             if self.category == 'raid-rancor' or self.category == 'raid-aat' or self.category == 'raid-sith':
@@ -171,4 +204,17 @@ class Squad(models.Model):
 
     class Meta:
         ordering = ['name']
+
+
+# Планы на прокачку по игрокам
+class RequiredUnit(models.Model):
+    character = models.ForeignKey(Character, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    rarity = models.IntegerField(default=0)        # до какой звезды качать (если 0 - то хотя бы открыть)
+    gear_level = models.IntegerField(default=0)    # до какого тира качать (если 0 - не имеет значения)
+    def __str__(self):
+        return "%s (%s)" % (self.character, self.player)
+    class Meta:
+        ordering = ['character__name']
+
 

@@ -2,12 +2,14 @@ from django.shortcuts import render
 from django.template import loader
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
-from .models import Guild, Player, Character, Unit, Squad
+from .models import Guild, Player, Character, Unit, Squad, RequiredUnit
 
 def index(request):
-    players = Player.objects.all()
-    context = {'players': players,}
-    return render(request, 'manager/index.html', context)
+    try:
+        guild = Guild.objects.filter(active=True)[0]
+    except Player.DoesNotExist:
+        raise Http404("Guild does not exist")
+    return render(request, 'manager/index.html', {'guild': guild})
 
 
 def character(request, character_id):
@@ -18,19 +20,51 @@ def character(request, character_id):
     return render(request, 'manager/character.html', {'character': character})
 
 
+def players(request):
+    guild = Guild.objects.filter(active=True)[0]
+    players = Player.objects.filter(guild=guild).order_by('-total_power')
+    # Отсортировать по количеству готовых отрядов
+    sorted_data = sorted(players, key=lambda k: k.total_power, reverse=True)
+    return render(request, 'manager/players.html', {'players': players, 'guild': guild,})
+
+
 def player(request, player_id):
     try:
+        # игрок
         player = Player.objects.get(pk=player_id)
-        units = Unit.objects.filter(player=player)
+        # список заданий на прокачку
+        required_units = {player: [ru for ru in RequiredUnit.objects.filter(player=player)]}
+        # сформировать список всех отрядов и их готовность
+        squads = Squad.objects.all()
+        data = []
+        for squad in squads:
+            squad_data = squad.populate_units(player=player, required_units=required_units,
+                can_require=request.user.is_authenticated).get(player.id)
+            data.append(squad_data)
     except Player.DoesNotExist:
         raise Http404("Player does not exist")
-    return render(request, 'manager/player.html', {'player': player, 'units': units})
+    return render(request, 'manager/player.html', {'player': player, 'squads': data, 'required_units': required_units[player]})
 
 
 def squads(request):
+    guild = Guild.objects.filter(active=True)[0]
     squads = Squad.objects.all()
-    return render(request, 'manager/squads.html', {'squads': squads})
+    return render(request, 'manager/squads.html', {'squads': squads, 'guild': guild,})
 
+
+def _make_squad_query(squad):
+    query = Q()
+    if squad.char1:
+        query = query | Q(character=squad.char1)
+    if squad.char2:
+        query = query | Q(character=squad.char2)
+    if squad.char3:
+        query = query | Q(character=squad.char3)
+    if squad.char4:
+        query = query | Q(character=squad.char4)
+    if squad.char5:
+        query = query | Q(character=squad.char5)
+    return query
 
 def squad_json(request, squad_id):
     try:
@@ -42,18 +76,7 @@ def squad_json(request, squad_id):
                 'char4': squad.char4.base_id if squad.char4 else '',
                 'char5': squad.char5.base_id if squad.char5 else '',
                 'units': []}
-        query = Q()
-        if squad.char1:
-            query = query | Q(character=squad.char1)
-        if squad.char2:
-            query = query | Q(character=squad.char2)
-        if squad.char3:
-            query = query | Q(character=squad.char3)
-        if squad.char4:
-            query = query | Q(character=squad.char4)
-        if squad.char5:
-            query = query | Q(character=squad.char5)
-        units = Unit.objects.filter(query).order_by('player__player_name')
+        units = Unit.objects.filter(_make_squad_query(squad)).order_by('player__player_name')
         for unit in units:
             jsondata['units'].append({'base_id': unit.character.base_id, 'player': unit.player.player_name, 'rarity': unit.rarity, 'level': unit.level, 'gear': unit.gear_level, 'power': unit.power})
     except Squad.DoesNotExist:
@@ -61,15 +84,37 @@ def squad_json(request, squad_id):
     return JsonResponse(jsondata)
 
 
+
 def squad(request, squad_id):
     try:
         guild = Guild.objects.filter(active=True)[0]
         squad = Squad.objects.get(pk=squad_id)
-        data = squad.populate_units(guild)
+        # список заданий на прокачку
+        required_units = {}
+        for ru in RequiredUnit.objects.filter(_make_squad_query(squad)):
+            if not required_units.get(ru.player):
+                required_units[ru.player] = [ru]
+            else:
+                required_units[ru.player].append(ru)
+        # данные по отряду
+        data = squad.populate_units(guild=guild, required_units=required_units, can_require=request.user.is_authenticated)
         # Отсортировать по мощи пачки
         sorted_data = sorted(data.values(), key=lambda k: k['power'], reverse=True)
+        can_require = request.user.is_authenticated
     except Guild.DoesNotExist:
         raise Http404("No active guild")
     except Squad.DoesNotExist:
         raise Http404("Squad does not exist")
-    return render(request, 'manager/squad.html', {'guild': guild, 'squad': squad, 'units': sorted_data})
+    return render(request, 'manager/squad.html', {'guild': guild, 'squad': squad, 'units': sorted_data,
+        'required_units': [ru for values in required_units.values() for ru in values]})
+
+
+def require_unit(request, player_id, character_id):
+    try:
+        player = Player.objects.get(pk=player_id)
+        units = Unit.objects.filter(player=player)
+    except Player.DoesNotExist:
+        raise Http404("Player does not exist")
+    except Character.DoesNotExist:
+        raise Http404("Character does not exist")
+    return render(request, 'manager/character.html', {'character': character})

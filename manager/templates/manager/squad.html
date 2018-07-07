@@ -2,18 +2,19 @@
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
-<h1>Squad: {{ squad.name }} [{{ squad.category }}] / {{ guild.name }}</h1>
-<p><a href="{% url 'squads' %}">&lt;&lt;&lt; back to squads</a></p>
+<h1>Отряд: {{ squad.name }} [{{ squad.category }}] / {{ guild.name }}</h1>
+<p><a href="{% url 'squads' %}">&lt;&lt;&lt; вернуться к списку</a></p>
+<p>{{ squad.description }}</p>
 <table border=1 width="100%">
     <thead>
         <td>#</td>
-        <td>Player</td>
-        <td><a href="{{ squad.char1.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char1.name }}</a></td>
-        <td><a href="{{ squad.char2.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char2.name }}</a></td>
-        <td><a href="{{ squad.char3.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char3.name }}</a></td>
-        <td><a href="{{ squad.char4.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char4.name }}</a></td>
-        <td><a href="{{ squad.char5.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char5.name }}</a></td>
-        <td>Total power</td>
+        <td>Игрок</td>
+        {% if squad.char1 %}<td><a href="{{ squad.char1.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char1.name }}</a></td>{% endif %}
+        {% if squad.char2 %}<td><a href="{{ squad.char2.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char2.name }}</a></td>{% endif %}
+        {% if squad.char3 %}<td><a href="{{ squad.char3.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char3.name }}</a></td>{% endif %}
+        {% if squad.char4 %}<td><a href="{{ squad.char4.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char4.name }}</a></td>{% endif %}
+        {% if squad.char5 %}<td><a href="{{ squad.char5.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char5.name }}</a></td>{% endif %}
+        <td>Мощь</td>
     </thead>
     <tbody>
         {% for unit in units %}
@@ -21,37 +22,74 @@
             <td>{{ forloop.counter }}</td>
             <td><a href="{% url 'player' unit.player.id %}">{{ unit.player.player_name }}</a></td>
 
+            {% if squad.char1 %}
             {% if unit.char1 %}
             <td {% if unit.char1.power < 6000 %}class = "absent"{% endif %}>{{ unit.char1.rarity }}<i class="fa fa-star"></i> {{ unit.char1.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char1.gear_level }}<i class="fa fa-cog"></i> {{ unit.char1.power }}<i class="fa fa-bolt last"></i></td>
             {% else %}
-            <td {% if squad.char1 %}class = "absent"{% endif %}>&nbsp;</td>
+            <td class = "absent">{% if unit.char1_require %}<a target="_blank" href="/admin/manager/requiredunit/add/?player={{ unit.player.id }}&character={{ squad.char1.id }}">запланировать</a>{% else %}&nbsp;{% endif %}</td>
+            {% endif %}
             {% endif %}
 
+            {% if squad.char2 %}
             {% if unit.char2 %}
             <td {% if unit.char2.power < 6000 %}class = "absent"{% endif %}>{{ unit.char2.rarity }}<i class="fa fa-star"></i> {{ unit.char2.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char2.gear_level }}<i class="fa fa-cog"></i> {{ unit.char2.power }}<i class="fa fa-bolt last"></i></td>
             {% else %}
-            <td {% if squad.char2 %}class = "absent"{% endif %}>&nbsp;</td>
+            <td class = "absent">{% if unit.char2_require %}<a target="_blank" href="/admin/manager/requiredunit/add/?player={{ unit.player.id }}&character={{ squad.char2.id }}">запланировать</a>{% else %}&nbsp;{% endif %}</td>
+            {% endif %}
             {% endif %}
 
+            {% if squad.char3 %}
             {% if unit.char3 %}
             <td {% if unit.char3.power < 6000 %}class = "absent"{% endif %}>{{ unit.char3.rarity }}<i class="fa fa-star"></i> {{ unit.char3.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char3.gear_level }}<i class="fa fa-cog"></i> {{ unit.char3.power }}<i class="fa fa-bolt last"></i></td>
             {% else %}
-            <td {% if squad.char3 %}class = "absent"{% endif %}>&nbsp;</td>
+            <td class = "absent">{% if unit.char3_require %}<a target="_blank" href="/admin/manager/requiredunit/add/?player={{ unit.player.id }}&character={{ squad.char3.id }}">запланировать</a>{% else %}&nbsp;{% endif %}</td>
+            {% endif %}
             {% endif %}
 
+            {% if squad.char4 %}
             {% if unit.char4 %}
             <td {% if unit.char4.power < 6000 %}class = "absent"{% endif %}>{{ unit.char4.rarity }}<i class="fa fa-star"></i> {{ unit.char4.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char4.gear_level }}<i class="fa fa-cog"></i> {{ unit.char4.power }}<i class="fa fa-bolt last"></i></td>
             {% else %}
-            <td {% if squad.char4 %}class = "absent"{% endif %}>&nbsp;</td>
+            <td class = "absent">{% if unit.char4_require %}<a target="_blank" href="/admin/manager/requiredunit/add/?player={{ unit.player.id }}&character={{ squad.char4.id }}">запланировать</a>{% else %}&nbsp;{% endif %}</td>
+            {% endif %}
             {% endif %}
 
+            {% if squad.char5 %}
             {% if unit.char5 %}
             <td {% if unit.char5.power < 6000 %}class = "absent"{% endif %}>{{ unit.char5.rarity }}<i class="fa fa-star"></i> {{ unit.char5.level }}<i class="fa fa-angle-double-up"></i> {{ unit.char5.gear_level }}<i class="fa fa-cog"></i> {{ unit.char5.power }}<i class="fa fa-bolt last"></i></td>
             {% else %}
-            <td {% if squad.char5 %}class = "absent"{% endif %}>&nbsp;</td>
+            <td class = "absent">{% if unit.char5_require %}<a target="_blank" href="/admin/manager/requiredunit/add/?player={{ unit.player.id }}&character={{ squad.char5.id }}">запланировать</a>{% else %}&nbsp;{% endif %}</td>
+            {% endif %}
             {% endif %}
 
             <td>{{ unit.power }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Задания на прокачку</h2>
+<table border=1>
+    <thead>
+        <td>#</td>
+        <td>Игрок</td>
+        <td>Персонаж</td>
+        <td>Требуемая редкость</td>
+        <td>Требуемый тир</td>
+    </thead>
+    <tbody>
+        {% if not required_units %}
+        <tr>
+            <td colspan="5" class="nonuseful">Нет заданий</td>
+        </tr>
+        {% endif %}
+        {% for ru in required_units %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ ru.player.player_name }}</td>
+            <td>{{ ru.character.name }}</td>
+            <td>{{ ru.rarity }}</td>
+            <td>{{ ru.gear_level }}</td>
         </tr>
         {% endfor %}
     </tbody>

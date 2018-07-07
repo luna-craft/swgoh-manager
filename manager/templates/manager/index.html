@@ -1,9 +1,9 @@
-{% if players %}
-    <ul>
-    {% for player in players %}
-        <li><a href="/manager/{{ player.id }}/">{{ player.player_name }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No players are available.</p>
-{% endif %}
+
+{% load static %}
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+<link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
+
+<h1>SWGOH Guild Manager / {{ guild.name }}</h1>
+<p><a href="https://swgoh.gg/g/{{ guild.guild_id }}/{{ guild.name }}" target="_blank" rel="noopener noreferrer">Смотреть на SWGOH.GG</a></p>
+<p><a href="{% url 'players' %}">Список игроков</a></p>
+<p><a href="{% url 'squads' %}">Список отрядов на прокачку</a></p>
