@@ -2,4 +2,4 @@ venv/
 __pycache__/
 manager/static/manager/images/
 *~
-swgoh/settings.local.py
+swgoh/settings_local.py

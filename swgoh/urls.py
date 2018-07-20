@@ -20,4 +20,5 @@ urlpatterns = [
     path('', include('manager.urls')),
     path('manager/', include('manager.urls')),
     path('admin/', admin.site.urls),
+    path('', include('django_telegrambot.urls')),
 ]

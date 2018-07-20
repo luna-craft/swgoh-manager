@@ -7,7 +7,8 @@ class GuildAdmin(admin.ModelAdmin):
 
 
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ('player_name', 'guild', 'active')
+    list_display = ('player_name', 'guild', 'ally_code', 'active')
+    list_filter = ['guild']
     search_fields = ['name']
 
 

@@ -41,7 +41,7 @@ def update_units(guild):
     json_data = response.json()
     # подготовка игроков для поиска и сопоставления
     players = Player.objects.filter(guild=guild)
-    print("Загрузка данных завершена, начинаю сопоставление")
+    print("Загрузка данных завершена, начинаю сопоставление, всего персонажей для обновления - %d" % len(json_data.items()))
     units_added = 0
     units_updated = 0
     # разбор полученных данных
@@ -51,6 +51,7 @@ def update_units(guild):
         if len(characters) == 0:
             print("Персонаж %s не найден!" % base_id)
             continue
+        print("Обновление персонажа %s (юнитов - %d)" % (base_id, len(units)))
         # перебрать всех юниты этого персонажа
         for u in units:
             # найти игрока
@@ -70,11 +71,11 @@ def update_units(guild):
                 unit.power = u['power']
                 unit.level = u['level']
                 unit.rarity=u['rarity']
-                units_added = units_added + 1
+                units_added = units_updated + 1
             else:
                 unit = Unit(character=characters[0], player=player, gear_level=u.get('gear_level', '0'),
                     power=u['power'], level=u['level'], rarity=u['rarity'])
-                units_updated = units_updated + 1
+                units_updated = units_added + 1
             unit.save()
     print("Обновление данных по складам гильдии %s завершено. Юнитов добавлено %d, обновлено %d" % (guild, units_added, units_updated))
 
@@ -96,24 +97,29 @@ def update_guild(guild):
         found = Player.objects.filter(swgoh_name=login)
         if len(found) == 0:
             player = Player(player_name=name, swgoh_name=login, guild=guild, active=True)
+            print('Новый игрок %s' % name)
             players_added = players_added + 1
         else:
             player = found[0]
             player.player_name = name
             player.active = True
             player.guild = guild # он мог быть в другой ги
+            print('Обновлен игрок %s' % name)
             players_updated = players_updated + 1
+        player.save()
     print("Обновление данных игроков гильдии %s завершено. Игроков добавлено %d, обновлено %d" % (guild, players_added, players_updated))
     # убрать игроков которые уже не в ги
-    for player in Player.objects.filter(guild=guild):
-        found = False
-        for p in players:
-            if p[0].attrib['href'][3:-1] == player.swgoh_name:
-                found = True
-                break
-        if not found:
-            player.active = False
-            player.save()
+    #for player in Player.objects.filter(guild=guild):
+    #    found = False
+    #    for p in players:
+    #        if p[0].attrib['href'][3:-1] == player.swgoh_name:
+    #            found = True
+    #            break
+    #    if not found and player.guild == guild:
+    #        player.active = False
+    #        player.guild = Null
+    #        print('Игрок %s выбыл из гильдии %s' % (player.player_name, guild.name))
+    #        player.save()
 
 
 def update_guilds():
@@ -144,3 +150,12 @@ def update_players_totals(guild):
             player.total_chars = player.total_chars + 1
         print("Обновлена статистика по игроку %s - power = %d, chars = %d" % (player, player.total_power, player.total_chars))
         player.save()
+
+
+def execute():
+    guild = Guild.objects.get(pk=1)
+    print("Запущено обновление гильдии %s' % guild")
+    update_units(guild)
+    update_squads_totals(guild)
+    update_players_totals(guild)
+    print("Обновление завершено")

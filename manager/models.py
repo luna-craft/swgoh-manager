@@ -5,29 +5,31 @@ class Guild(models.Model):
     guild_id = models.IntegerField(default=0)      # идентификатор гильдии на swgoh.gg
     name = models.CharField(max_length=200)        # наименование гильдии
     active = models.BooleanField(default=True)     # требуется обновлять данные
+    description = models.CharField(max_length=300, default='') # примечание 
     def __str__(self):
         return "%s [%d]" % (self.name, self.guild_id)
 
 
 class Player(models.Model):
     # Данные для Телеграма
-    chat_id = models.IntegerField(default=0)       # идентификатор в Телеграм
-    user_name = models.CharField(max_length=200)   # ник в Телеграм
-    first_name = models.CharField(max_length=200)  # отображаемое имя в Телеграм
-    last_name = models.CharField(max_length=200)   # ---"---
+    chat_id = models.IntegerField(default=0)                   # идентификатор в Телеграм
+    user_name = models.CharField(max_length=200, default='', blank=True)   # ник в Телеграм
+    first_name = models.CharField(max_length=200, default='', blank=True)  # отображаемое имя в Телеграм
+    last_name = models.CharField(max_length=200, default='', blank=True)   # ---"---
     # Данные игры
-    player_id = models.CharField(max_length=30)    # PlayerID из игры
-    ally_code = models.CharField(max_length=11)    # код союзника из игры
-    player_name = models.CharField(max_length=100) # игровое имя
-    swgoh_name = models.CharField(max_length=100)  # имя пользователя swgoh.gg
+    player_id = models.CharField(max_length=30, default='', blank=True)    # PlayerID из игры
+    ally_code = models.CharField(max_length=11, default='', blank=True)    # код союзника из игры
+    player_name = models.CharField(max_length=100)             # игровое имя
+    swgoh_name = models.CharField(max_length=100, default='', blank=True)  # имя пользователя swgoh.gg
     #
-    guild = models.ForeignKey(Guild, on_delete=models.CASCADE)
-    active = models.BooleanField(default=False)    # признак что пользователь активен
-    total_power = models.IntegerField(default=0)   # общая ГМ
-    total_chars = models.IntegerField(default=0)   # всего персонажей на складе
-    total_useful = models.IntegerField(default=0)  # количество годных пачек для ВГ
+    description = models.CharField(max_length=300, default='', blank=True) # примечание к игроку
+    guild = models.ForeignKey(Guild, on_delete=models.SET_NULL, blank=True, null=True)
+    active = models.BooleanField(default=False)                # признак что пользователь активен
+    total_power = models.IntegerField(default=0)               # общая ГМ
+    total_chars = models.IntegerField(default=0)               # всего персонажей на складе
+    total_useful = models.IntegerField(default=0)              # количество годных пачек для ВГ
     def __str__(self):
-        return "%s [%s]" % (self.player_name, self.guild.name)
+        return "%s [%s]" % (self.player_name, self.guild.name if self.guild else '---')
     class Meta:
         ordering = ['player_name']
 
