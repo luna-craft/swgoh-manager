@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import date
 
 
 class Guild(models.Model):
@@ -219,4 +220,17 @@ class RequiredUnit(models.Model):
     class Meta:
         ordering = ['character__name']
 
+
+# Еженедельная статистика по игрокам
+class PlayerStat(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)    # игрок
+    week = models.DateField(default=date.today)                     # дата съема статистики
+    total_energy = models.IntegerField(default=0)                   # сколько энки всего сдал игрок
+    total_power = models.IntegerField(default=0)                    # общая ГМ
+    total_chars = models.IntegerField(default=0)                    # всего персонажей на складе
+    class Meta:
+        unique_together = ('player','week',)
+        ordering = ['-week', 'player__player_name']
+    def __str__(self):
+        return "%s @ %s - %d energy, %d power, %d chars" % (self.player.player_name if self.player else '---', self.week, self.total_energy, self.total_power, self.total_chars)
 

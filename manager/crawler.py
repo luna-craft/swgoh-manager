@@ -150,11 +150,15 @@ def update_players_totals(guild):
             player.total_chars = player.total_chars + 1
         print("Обновлена статистика по игроку %s - power = %d, chars = %d" % (player, player.total_power, player.total_chars))
         player.save()
+        # теперь записать статистику
+        stat = PlayerStat(player=player, total_power=player.total_power, total_chars=player.total_chars)
+        stat.save()
 
 
 def execute():
-    guild = Guild.objects.get(pk=1)
-    print("Запущено обновление гильдии %s' % guild")
+    guild = Guild.objects.filter(active=True)[0]
+    print("Запущено обновление гильдии %s" % guild)
+    update_guild(guild)
     update_units(guild)
     update_squads_totals(guild)
     update_players_totals(guild)

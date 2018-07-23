@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Guild, Player, Character, Unit, Squad, RequiredUnit
+from .models import Guild, Player, Character, Unit, Squad, RequiredUnit, PlayerStat
 
 class GuildAdmin(admin.ModelAdmin):
     list_display = ('name', 'guild_id', 'active')
@@ -35,10 +35,15 @@ class RequiredUnitAdmin(admin.ModelAdmin):
     search_fields = ['character__name', 'player__player_name']
 
 
+class PlayerStatAdmin(admin.ModelAdmin):
+    list_display = ('player', 'week', 'total_energy', 'total_power', 'total_chars')
+    search_fields = ['player__player_name']
+
 admin.site.register(Guild, GuildAdmin)
 admin.site.register(Player, PlayerAdmin)
 admin.site.register(Character, CharacterAdmin)
 admin.site.register(Unit, UnitAdmin)
 admin.site.register(Squad, SquadAdmin)
 admin.site.register(RequiredUnit, RequiredUnitAdmin)
+admin.site.register(PlayerStat, PlayerStatAdmin)
 
