@@ -19,7 +19,7 @@ class CharacterAdmin(admin.ModelAdmin):
 
 
 class UnitAdmin(admin.ModelAdmin):
-    list_filter = ['rarity', 'gear_level']
+    list_filter = ['rarity', 'gear_level', 'character']
     list_display = ('character', 'player', 'rarity', 'level', 'gear_level', 'power')
     search_fields = ['character__name', 'player__player_name']
 
