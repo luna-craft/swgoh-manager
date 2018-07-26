@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from .models import Guild, Player, Character, Unit, Squad, RequiredUnit, PlayerStat
 
 class GuildAdmin(admin.ModelAdmin):
@@ -7,10 +8,13 @@ class GuildAdmin(admin.ModelAdmin):
 
 
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ('player_name', 'guild', 'ally_code', 'active')
+    list_display = ('player_name', 'guild', 'ally_code', 'show_swgoh_url', 'active')
     list_filter = ['guild']
     search_fields = ['name']
 
+    def show_swgoh_url(self, obj):
+        return format_html("<a href='https://swgoh.gg/u/{url}' target='_blank' referrerpolicy='no-referrer'>{url}</a>", url=obj.swgoh_name)
+    show_swgoh_url.short_description = "SWGOH.GG Page"
 
 class CharacterAdmin(admin.ModelAdmin):
     list_display = ('name', 'combat_type', 'power')
