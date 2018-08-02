@@ -123,17 +123,19 @@ class Squad(models.Model):
                 data[player.id] = self._default_squad(player, can_require=can_require, required_units=ru)
         return data
 
-    def _populate_units(self, character, idx, data, player=None, can_require=False, required_units={}):
+    def _populate_units(self, character, idx, data, guild=None, player=None, can_require=False, required_units={}):
         if character == None:
             return data
         if player:
             units = Unit.objects.filter(character=character, player=player)
+        elif guild:
+            units = Unit.objects.filter(character=character, player__guild=guild)
         else:
             units = Unit.objects.filter(character=character)
         for unit in units:
             item = data.get(unit.player.id)
             if item == None:
-                item = self._default_squad(player, can_require=can_require, required_units=required_units)
+                item = self._default_squad(unit.player, can_require=can_require, required_units=required_units)
                 data[unit.player.id] = item
             item['char%d' % idx] = unit
 
@@ -190,11 +192,11 @@ class Squad(models.Model):
     def populate_units(self, guild=None, player=None, can_require=False, required_units={}):
         data = self._populate_players(guild=guild, player=player, can_require=can_require, required_units=required_units)
         print("Загружено игроков: %d" % len(data.keys()))
-        self._populate_units(self.char1, 1, data, player=player, can_require=can_require, required_units=required_units)
-        self._populate_units(self.char2, 2, data, player=player, can_require=can_require, required_units=required_units)
-        self._populate_units(self.char3, 3, data, player=player, can_require=can_require, required_units=required_units)
-        self._populate_units(self.char4, 4, data, player=player, can_require=can_require, required_units=required_units)
-        self._populate_units(self.char5, 5, data, player=player, can_require=can_require, required_units=required_units)
+        self._populate_units(self.char1, 1, data, guild=guild, player=player, can_require=can_require, required_units=required_units)
+        self._populate_units(self.char2, 2, data, guild=guild, player=player, can_require=can_require, required_units=required_units)
+        self._populate_units(self.char3, 3, data, guild=guild, player=player, can_require=can_require, required_units=required_units)
+        self._populate_units(self.char4, 4, data, guild=guild, player=player, can_require=can_require, required_units=required_units)
+        self._populate_units(self.char5, 5, data, guild=guild, player=player, can_require=can_require, required_units=required_units)
         # Проверить полезность
         for unit in data.values():
             if self.category == 'raid-rancor' or self.category == 'raid-aat' or self.category == 'raid-sith':

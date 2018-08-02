@@ -20,7 +20,7 @@
         {% for unit in units %}
         <tr {% if unit.useful %}class = "useful"{% elif unit.power == 0 %}class = "absent"{% else %}class = "nonuseful"{% endif%}>
             <td>{{ forloop.counter }}</td>
-            <td><a href="{% url 'player' unit.player.id %}">{{ unit.player.player_name }}</a></td>
+	    <td><a href="{% if unit.player %}{% url 'player' unit.player.id %}{% endif %}">{{ unit.player.player_name }}</a></td>
 
             {% if squad.char1 %}
             {% if unit.char1 %}
