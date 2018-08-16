@@ -127,15 +127,19 @@ def rancor(request):
         players = Player.objects.filter(guild=guild)
         units = Unit.objects.filter(character=solo, player__in=players)
         rancor = []
+        norancor = []
         for player in players:
             matches = [u for u in units if u.player == player]
             if matches:
                 unit = matches[0]
-                rancor.append({'player': player, 'rarity': unit.rarity, 'level': unit.level, 'gear_level': unit.gear_level, 'power': unit.power})
+                if unit.rarity == 7:
+                    norancor.append({'player': player, 'rarity': unit.rarity, 'level': unit.level, 'gear_level': unit.gear_level, 'power': unit.power})
+                else:
+                    rancor.append({'player': player, 'rarity': unit.rarity, 'level': unit.level, 'gear_level': unit.gear_level, 'power': unit.power})
             else:
                 rancor.append({'player': player, 'rarity': 0, 'level': 0, 'gear_level': 0, 'power': 0})
     except Character.DoesNotExist:
         raise Http404("Han Solor character not found")
     except Guild.DoesNotExist:
         raise Http404("Guild does not exist")
-    return render(request, 'manager/rancor.html', {'guild': guild, 'players': players, 'units': units, 'rancor': rancor})
+    return render(request, 'manager/rancor.html', {'guild': guild, 'players': players, 'units': units, 'rancor': rancor, 'norancor': norancor})

@@ -14,7 +14,7 @@
   </thead>
   <tbody>
     {% for r in rancor %}
-    <tr class = "{% if r.rarity < 7 %}absent{% else %}useful{% endif%}">
+    <tr class = "{% if r.rarity == 0 %}absent{% else %}nonuseful{% endif%}">
       <td>{{ forloop.counter }}</td>
       <td><a href="{% url 'player' r.player.id %}">{{ r.player.player_name }}</a></td>
       <td>{{ r.rarity }}</td>
@@ -24,4 +24,14 @@
     </tr>
     {% endfor %}
   </tbody>
+    {% for r in norancor %}
+    <tr class = "useful">
+      <td>{{ forloop.counter }}</td>
+      <td><a href="{% url 'player' r.player.id %}">{{ r.player.player_name }}</a></td>
+      <td>{{ r.rarity }}</td>
+      <td>{{ r.level }}</td>
+      <td>{{ r.gear_level }}</td>
+      <td>{{ r.power }}</td>
+    </tr>
+    {% endfor %}
 </table>
