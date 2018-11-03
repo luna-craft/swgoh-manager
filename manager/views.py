@@ -6,10 +6,12 @@ from .models import Guild, Player, Character, Unit, Squad, RequiredUnit
 
 def index(request):
     try:
-        guild = Guild.objects.filter(active=True)[0]
+        guilds = Guild.objects.filter(active=True)
+        if not guilds:
+            raise Http404("No active guilds")
     except Guild.DoesNotExist:
         raise Http404("Guild does not exist")
-    return render(request, 'manager/index.html', {'guild': guild})
+    return render(request, 'manager/index.html', {'guilds': guilds})
 
 
 def character(request, character_id):
@@ -20,8 +22,11 @@ def character(request, character_id):
     return render(request, 'manager/character.html', {'character': character})
 
 
-def players(request):
-    guild = Guild.objects.filter(active=True)[0]
+def players_guild(request, guild_id):
+    try:
+        guild = Guild.objects.filter(guild_id=guild_id)[0]
+    except Guild.DoesNotExist:
+        raise Http404("Guild does not exist")
     players = Player.objects.filter(guild=guild).order_by('-total_power')
     # Отсортировать по количеству готовых отрядов
     sorted_data = sorted(players, key=lambda k: k.total_power, reverse=True)
@@ -47,9 +52,8 @@ def player(request, player_id):
 
 
 def squads(request):
-    guild = Guild.objects.filter(active=True)[0]
     squads = Squad.objects.all()
-    return render(request, 'manager/squads.html', {'squads': squads, 'guild': guild,})
+    return render(request, 'manager/squads.html', {'squads': squads})
 
 
 def _make_squad_query(squad):
@@ -120,10 +124,10 @@ def require_unit(request, player_id, character_id):
     return render(request, 'manager/character.html', {'character': character})
 
 
-def rancor(request):
+def rancor(request, guild_id):
     try:
         solo = Character.objects.get(base_id='HANSOLO')
-        guild = Guild.objects.filter(active=True)[0]
+        guild = Guild.objects.filter(guild_id=guild_id)[0]
         players = Player.objects.filter(guild=guild)
         units = Unit.objects.filter(character=solo, player__in=players)
         rancor = []
@@ -133,13 +137,15 @@ def rancor(request):
             if matches:
                 unit = matches[0]
                 if unit.rarity == 7:
-                    norancor.append({'player': player, 'rarity': unit.rarity, 'level': unit.level, 'gear_level': unit.gear_level, 'power': unit.power})
-                else:
                     rancor.append({'player': player, 'rarity': unit.rarity, 'level': unit.level, 'gear_level': unit.gear_level, 'power': unit.power})
+                else:
+                    norancor.append({'player': player, 'rarity': unit.rarity, 'level': unit.level, 'gear_level': unit.gear_level, 'power': unit.power})
             else:
-                rancor.append({'player': player, 'rarity': 0, 'level': 0, 'gear_level': 0, 'power': 0})
+                norancor.append({'player': player, 'rarity': 0, 'level': 0, 'gear_level': 0, 'power': 0})
     except Character.DoesNotExist:
         raise Http404("Han Solor character not found")
     except Guild.DoesNotExist:
         raise Http404("Guild does not exist")
-    return render(request, 'manager/rancor.html', {'guild': guild, 'players': players, 'units': units, 'rancor': rancor, 'norancor': norancor})
+    return render(request, 'manager/rancor.html', {'guild': guild, 'players': players, 'units': units,
+        'rancor': sorted(rancor, key=lambda k: k['power'], reverse=True),
+        'norancor': sorted(norancor, key=lambda k: k['power'], reverse=True)})

@@ -4,24 +4,19 @@ from datetime import date
 
 class Guild(models.Model):
     guild_id = models.IntegerField(default=0)      # идентификатор гильдии на swgoh.gg
-    name = models.CharField(max_length=200)        # наименование гильдии
+    name = models.CharField(max_length=200, default='')        # наименование гильдии
+    url = models.CharField(max_length=200, default='')         # ссылка на свгох
     active = models.BooleanField(default=True)     # требуется обновлять данные
-    description = models.CharField(max_length=300, default='') # примечание 
+    description = models.CharField(max_length=300, default='') # примечание
     def __str__(self):
         return "%s [%d]" % (self.name, self.guild_id)
 
 
 class Player(models.Model):
-    # Данные для Телеграма
-    chat_id = models.IntegerField(default=0)                   # идентификатор в Телеграм
-    user_name = models.CharField(max_length=200, default='', blank=True)   # ник в Телеграм
-    first_name = models.CharField(max_length=200, default='', blank=True)  # отображаемое имя в Телеграм
-    last_name = models.CharField(max_length=200, default='', blank=True)   # ---"---
     # Данные игры
-    player_id = models.CharField(max_length=30, default='', blank=True)    # PlayerID из игры
-    ally_code = models.CharField(max_length=11, default='', blank=True)    # код союзника из игры
     player_name = models.CharField(max_length=100)             # игровое имя
-    swgoh_name = models.CharField(max_length=100, default='', blank=True)  # имя пользователя swgoh.gg
+    ally_code = models.CharField(max_length=9, default='', blank=True)    # код союзника из игры
+    player_id = models.CharField(max_length=30, default='', blank=True)    # PlayerID из игры
     #
     description = models.CharField(max_length=300, default='', blank=True) # примечание к игроку
     guild = models.ForeignKey(Guild, on_delete=models.SET_NULL, blank=True, null=True)
@@ -29,6 +24,11 @@ class Player(models.Model):
     total_power = models.IntegerField(default=0)               # общая ГМ
     total_chars = models.IntegerField(default=0)               # всего персонажей на складе
     total_useful = models.IntegerField(default=0)              # количество годных пачек для ВГ
+    # Данные для Телеграма
+    chat_id = models.IntegerField(default=0)                   # идентификатор в Телеграм
+    user_name = models.CharField(max_length=200, default='', blank=True)   # ник в Телеграм
+    first_name = models.CharField(max_length=200, default='', blank=True)  # отображаемое имя в Телеграм
+    last_name = models.CharField(max_length=200, default='', blank=True)   # ---"---
     def __str__(self):
         return "%s [%s]" % (self.player_name, self.guild.name if self.guild else '---')
     class Meta:
@@ -191,7 +191,6 @@ class Squad(models.Model):
 
     def populate_units(self, guild=None, player=None, can_require=False, required_units={}):
         data = self._populate_players(guild=guild, player=player, can_require=can_require, required_units=required_units)
-        print("Загружено игроков: %d" % len(data.keys()))
         self._populate_units(self.char1, 1, data, guild=guild, player=player, can_require=can_require, required_units=required_units)
         self._populate_units(self.char2, 2, data, guild=guild, player=player, can_require=can_require, required_units=required_units)
         self._populate_units(self.char3, 3, data, guild=guild, player=player, can_require=can_require, required_units=required_units)
@@ -201,7 +200,7 @@ class Squad(models.Model):
         for unit in data.values():
             if self.category == 'raid-rancor' or self.category == 'raid-aat' or self.category == 'raid-sith':
                 unit['useful'] = self._check_raid(unit)
-            elif self.category == 'tw-defense' or self.category == 'tw-defense':
+            elif self.category == 'tw-offense' or self.category == 'tw-defense':
                 unit['useful'] = self._check_power(unit)
             else:
                 unit['useful'] = self._check_required(unit)

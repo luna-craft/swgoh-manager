@@ -4,6 +4,7 @@
 
 <h1>Отряд: {{ squad.name }} [{{ squad.category }}] / {{ guild.name }}</h1>
 <p><a href="{% url 'squads' %}">&lt;&lt;&lt; вернуться к списку</a></p>
+<p><a href="{% url 'index' %}">На главную</a></p>
 <p>{{ squad.description }}</p>
 <table border=1 width="100%">
     <thead>

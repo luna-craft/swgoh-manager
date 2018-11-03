@@ -2,7 +2,8 @@
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
 <h1>Готовность РХана / {{ guild.name }}</h1>
-<p><a href="{% url 'players' %}">Список игроков</a></p>
+<p><a href="{% url 'index' %}">На главную</a></p>
+<p><a href="{% url 'players' guild.guild_id %}">Список игроков</a></p>
 <table border=1>
   <thead>
     <td>#</td>
@@ -13,7 +14,7 @@
     <td>Мощь</td>
   </thead>
   <tbody>
-    {% for r in rancor %}
+    {% for r in norancor %}
     <tr class = "{% if r.rarity == 0 %}absent{% else %}nonuseful{% endif%}">
       <td>{{ forloop.counter }}</td>
       <td><a href="{% url 'player' r.player.id %}">{{ r.player.player_name }}</a></td>
@@ -24,7 +25,7 @@
     </tr>
     {% endfor %}
   </tbody>
-    {% for r in norancor %}
+    {% for r in rancor %}
     <tr class = "useful">
       <td>{{ forloop.counter }}</td>
       <td><a href="{% url 'player' r.player.id %}">{{ r.player.player_name }}</a></td>

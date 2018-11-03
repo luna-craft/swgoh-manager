@@ -4,7 +4,12 @@
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
 <h1>SWGOH Guild Manager / {{ guild.name }}</h1>
-<p><a href="https://swgoh.gg/g/{{ guild.guild_id }}/{{ guild.name }}" target="_blank" rel="noopener noreferrer">Смотреть на SWGOH.GG</a></p>
-<p><a href="{% url 'players' %}">Список игроков</a></p>
+{% for guild in guilds %}
+  <h2>{{ guild.name }}</h2>
+  <p><a href="{{ guild.url }}" target="_blank" rel="noopener noreferrer">Смотреть на SWGOH.GG</a></p>
+  <p><a href="{% url 'players' guild.guild_id %}">Список игроков</a></p>
+  <p><a href="{% url 'rancor' guild.guild_id %}">Готовность РХана</a></p>
+  <hr>
+{% endfor %}
+
 <p><a href="{% url 'squads' %}">Список отрядов на прокачку</a></p>
-<p><a href="{% url 'rancor' %}">Готовность РХана</a></p>

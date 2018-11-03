@@ -3,7 +3,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
 <h1>Игрок {{ player.player_name }} / {{ player.guild.name }}</h1>
-<p><a href="{% url 'players' %}">&lt;&lt;&lt; вернуться к списку</a> | <a href="https://swgoh.gg/u/{{ player.swgoh_name }}" target="_blank" rel="noopener noreferrer">Смотреть на SWGOH.GG</a></p>
+<p><a href="{% url 'players' player.guild.guild_id %}">&lt;&lt;&lt; вернуться к списку</a> | <a href="https://swgoh.gg/u/{{ player.swgoh_name }}" target="_blank" rel="noopener noreferrer">Смотреть на SWGOH.GG</a> | <a href="{% url 'index' %}">На главную</a></p>
 <p>Мощь: {{ player.total_power }} | Персонажей: {{ player.total_chars }}</p>
 <h2>Готовность отрядов</h2>
 <table border=1 width="100%">

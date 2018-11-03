@@ -8,13 +8,15 @@ class GuildAdmin(admin.ModelAdmin):
 
 
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ('player_name', 'guild', 'ally_code', 'show_swgoh_url', 'active')
+    list_display = ('player_name', 'guild', 'show_swgoh_url', 'total_power', 'active')
     list_filter = ['guild']
-    search_fields = ['name']
+    search_fields = ['player_name']
+    ordering = ['player_name']
 
     def show_swgoh_url(self, obj):
-        return format_html("<a href='https://swgoh.gg/u/{url}' target='_blank' referrerpolicy='no-referrer'>{url}</a>", url=obj.swgoh_name)
+        return format_html("<a href='https://swgoh.gg/p/{url}' target='_blank' referrerpolicy='no-referrer'>{url}</a>", url=obj.ally_code)
     show_swgoh_url.short_description = "SWGOH.GG Page"
+    show_swgoh_url.admin_order_field = 'swgoh_name'
 
 class CharacterAdmin(admin.ModelAdmin):
     list_display = ('name', 'combat_type', 'power')
