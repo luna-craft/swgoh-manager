@@ -1,0 +1,32 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
+
+<h1>Прогресс прокачки / {{ guild.name }}</h1>
+<p><a href="{% url 'index' %}">На главную</a></p>
+<p><a href="{% url 'players' guild.guild_id %}">Список игроков</a></p>
+<table border=1>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Игрок</th>
+      {% for week in weeks %}
+        <th>{{ week }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for player, stat in stats %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td><a href="{% url 'player' player.id %}">{{ player.player_name }}</a></td>
+        {% for power in stat %}
+          {% if forloop.counter == 6 %}
+            <td class="{% if power > 0 %}useful{% else %}nonuseful{% endif%}">+{{ power }}</td>
+          {% else %}
+            <td>{{ power }}</td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

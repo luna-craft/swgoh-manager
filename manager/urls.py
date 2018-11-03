@@ -14,4 +14,5 @@ urlpatterns = [
     path('squad/<int:squad_id>/json', views.squad_json, name='squad_json'),
     path('require_unit/<int:player_id>/<int:character_id>', views.require_unit, name='require_unit'),
     path('rancor/<int:guild_id>', views.rancor, name='rancor'),
+    path('stats/<int:guild_id>', views.stats, name='stats'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

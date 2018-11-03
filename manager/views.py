@@ -2,7 +2,9 @@ from django.shortcuts import render
 from django.template import loader
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
-from .models import Guild, Player, Character, Unit, Squad, RequiredUnit
+from django.db import connection
+from collections import defaultdict
+from .models import Guild, Player, Character, Unit, Squad, RequiredUnit, PlayerStat
 
 def index(request):
     try:
@@ -149,3 +151,33 @@ def rancor(request, guild_id):
     return render(request, 'manager/rancor.html', {'guild': guild, 'players': players, 'units': units,
         'rancor': sorted(rancor, key=lambda k: k['power'], reverse=True),
         'norancor': sorted(norancor, key=lambda k: k['power'], reverse=True)})
+
+
+def stats(request, guild_id):
+    try:
+        guild = Guild.objects.filter(guild_id=guild_id)[0]
+    except Guild.DoesNotExist:
+        raise Http404("Guild does not exist")
+    players = Player.objects.filter(guild=guild).order_by('-total_power')
+    # Загрузить статистику по игрокам за последние 5 недель
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT week FROM manager_playerstat GROUP BY week ORDER BY week DESC LIMIT 5')
+        rows = cursor.fetchall()
+        weeks = [row[0] for row in rows][::-1]
+    stats = PlayerStat.objects.filter(player__guild=guild, week__in=weeks)
+
+    weeks.append('Прирост') # прирост в последнюю неделю
+    weeks_dict = dict([(week,i) for i,week in enumerate(weeks)])
+
+    # Сделать сводную таблицу
+    stats_dict = defaultdict(lambda: [0]*len(weeks))
+    for stat in stats:
+        stats_dict[stat.player][weeks_dict[stat.week]] = int(stat.total_power)
+
+    # Посчитать прирост за последнюю неделю
+    for player in players:
+        stats_dict[player][5] = stats_dict[player][4] - stats_dict[player][3]
+
+    stats_list = list(stats_dict.items())
+
+    return render(request, 'manager/stats.html', {'guild': guild, 'players': players, 'weeks': weeks, 'stats': stats_list})
