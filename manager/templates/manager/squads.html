@@ -1,9 +1,10 @@
 {% load static %}
+{% static "manager" as baseUrl %}
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
 <h1>Отряды</h1>
 <p><a href="{% url 'index' %}">На главную</a></p>
-<table border=1 width="100%">
+<table border=1 width="100%" class="centered">
 	<thead>
 		<td>Название</td>
 		<td>Категория</td>
@@ -19,11 +20,11 @@
 		<tr {% if squad.total_useful %}class = "useful"{% else %}class = "nonuseful"{% endif%}>
 			<td><a href="{% url 'squad' squad.id %}">{{ squad.name }}</a></td>
 			<td>{{ squad.category }}</td>
-			<td>{% if squad.char1 %}{{ squad.char1 }}{% else %}&nbsp;{% endif %}</td>
-			<td>{% if squad.char2 %}{{ squad.char2 }}{% else %}&nbsp;{% endif %}</td>
-			<td>{% if squad.char3 %}{{ squad.char3 }}{% else %}&nbsp;{% endif %}</td>
-			<td>{% if squad.char4 %}{{ squad.char4 }}{% else %}&nbsp;{% endif %}</td>
-			<td>{% if squad.char5 %}{{ squad.char5 }}{% else %}&nbsp;{% endif %}</td>
+			<td>{% if squad.char1 %}<img src="{{ baseUrl }}/images/{{ squad.char1.image }}" class="icon"><br>{{ squad.char1 }}{% else %}&nbsp;{% endif %}</td>
+			<td>{% if squad.char2 %}<img src="{{ baseUrl }}/images/{{ squad.char2.image }}" class="icon"><br>{{ squad.char2 }}{% else %}&nbsp;{% endif %}</td>
+			<td>{% if squad.char3 %}<img src="{{ baseUrl }}/images/{{ squad.char3.image }}" class="icon"><br>{{ squad.char3 }}{% else %}&nbsp;{% endif %}</td>
+			<td>{% if squad.char4 %}<img src="{{ baseUrl }}/images/{{ squad.char4.image }}" class="icon"><br>{{ squad.char4 }}{% else %}&nbsp;{% endif %}</td>
+			<td>{% if squad.char5 %}<img src="{{ baseUrl }}/images/{{ squad.char5.image }}" class="icon"><br>{{ squad.char5 }}{% else %}&nbsp;{% endif %}</td>
 			<td>{{ squad.total_useful }}</td>
 		</tr>
 		{% endfor %}

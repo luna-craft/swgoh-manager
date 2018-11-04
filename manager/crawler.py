@@ -4,30 +4,63 @@ import json
 import lxml.html
 import cssselect
 import datetime
+import shutil
+import os.path
 from .models import *
+
+
+def save_char_image(char):
+    fname = "static/manager/images/" + char.image
+
+    # проверить что картинка уже есть
+    if os.path.isfile(fname):
+        return False
+
+    # обновить картинку
+    with requests.get('http://swgoh.gg/static/img/assets/tex.charui_' + char.image, stream=True) as response:
+        if response.status_code == 200:
+            with open(fname, 'wb') as f:
+                response .raw.decode_content = True
+                shutil.copyfileobj(response.raw, f)
+            print("Сохранен значок персонажа " + char.base_id)
+            return True
+        else:
+            print("Ошибка получения персонажа %s - %d" % (char.base_i, response.status_code))
+
+    return False
 
 
 def update_character_database():
     # загрузить базу данных персонажей
+    print("Обновляю базу данных по персонажам и кораблям")
     response = requests.get('https://swgoh.gg/api/characters')
     json_data = response.json()
+    char_added = 0
+    ship_added = 0
+    total_updated = 0
+
     for idx, c in enumerate(json_data):
         char, created = Character.objects.update_or_create(base_id=c['base_id'], defaults={'base_id': c['base_id'], 'name': c['name'],
-            'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][29:], 'combat_type': c['combat_type']})
-        # обновить картинку
-        #r = s.get('http:' + char.image, stream=True)
-        #if r.status_code == 200:
-        #    with open("manager/static/manager/images/" + char.image[29:], 'wb') as f:
-        #        r.raw.decode_content = True
-        #        shutil.copyfileobj(r.raw, f)
-        #    print("Сохранил " + char.base_id)
+            'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][40:], 'combat_type': c['combat_type']})
+        save_char_image(char)
+        if created:
+            char_added = char_added + 1
+        else:
+            total_updated = total_updated + 1
 
     # загрузить базу данных кораблей
     response = requests.get('https://swgoh.gg/api/ships')
     json_data = response.json()
     for c in json_data:
         char, created = Character.objects.update_or_create(base_id=c['base_id'], defaults={'base_id': c['base_id'], 'name': c['name'],
-            'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][29:], 'combat_type': c['combat_type']})
+            'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][40:], 'combat_type': c['combat_type']})
+        save_char_image(char)
+        if created:
+            ship_added = ship_added + 1
+        else:
+            total_updated = total_updated + 1
+
+    print("Обновление завершено. Новых персонажей - %d, новых кораблей - %d. Обновлено всего - %d" % (char_added, ship_added, total_updated))
 
 
 #response = requests.get('https://swgoh.gg/api/guilds/34508/units')

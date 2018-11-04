@@ -1,20 +1,20 @@
 {% load static %}
+{% static "manager" as baseUrl %}
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
 <h1>Отряд: {{ squad.name }} [{{ squad.category }}] / {{ guild.name }}</h1>
-<p><a href="{% url 'squads' %}">&lt;&lt;&lt; вернуться к списку</a></p>
-<p><a href="{% url 'index' %}">На главную</a></p>
+<p><a href="{% url 'squads' %}">&lt;&lt;&lt; вернуться к списку</a> | <a href="{% url 'index' %}">На главную</a></p>
 <p>{{ squad.description }}</p>
-<table border=1 width="100%">
+<table border=1 width="100%" class="centered">
     <thead>
         <td>#</td>
         <td>Игрок</td>
-        {% if squad.char1 %}<td><a href="{{ squad.char1.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char1.name }}</a></td>{% endif %}
-        {% if squad.char2 %}<td><a href="{{ squad.char2.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char2.name }}</a></td>{% endif %}
-        {% if squad.char3 %}<td><a href="{{ squad.char3.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char3.name }}</a></td>{% endif %}
-        {% if squad.char4 %}<td><a href="{{ squad.char4.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char4.name }}</a></td>{% endif %}
-        {% if squad.char5 %}<td><a href="{{ squad.char5.url }}" target="_blank" rel="noopener noreferrer">{{ squad.char5.name }}</a></td>{% endif %}
+        {% if squad.char1 %}<td><a href="{{ squad.char1.url }}" target="_blank" rel="noopener noreferrer"><img src="{{ baseUrl }}/images/{{ squad.char1.image }}" class="icon"><br>{{ squad.char1.name }}</a></td>{% endif %}
+        {% if squad.char2 %}<td><a href="{{ squad.char2.url }}" target="_blank" rel="noopener noreferrer"><img src="{{ baseUrl }}/images/{{ squad.char2.image }}" class="icon"><br>{{ squad.char2.name }}</a></td>{% endif %}
+        {% if squad.char3 %}<td><a href="{{ squad.char3.url }}" target="_blank" rel="noopener noreferrer"><img src="{{ baseUrl }}/images/{{ squad.char3.image }}" class="icon"><br>{{ squad.char3.name }}</a></td>{% endif %}
+        {% if squad.char4 %}<td><a href="{{ squad.char4.url }}" target="_blank" rel="noopener noreferrer"><img src="{{ baseUrl }}/images/{{ squad.char4.image }}" class="icon"><br>{{ squad.char4.name }}</a></td>{% endif %}
+        {% if squad.char5 %}<td><a href="{{ squad.char5.url }}" target="_blank" rel="noopener noreferrer"><img src="{{ baseUrl }}/images/{{ squad.char5.image }}" class="icon"><br>{{ squad.char5.name }}</a></td>{% endif %}
         <td>Мощь</td>
     </thead>
     <tbody>
