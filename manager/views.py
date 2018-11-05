@@ -8,11 +8,18 @@ from .models import Guild, Player, Character, Unit, Squad, RequiredUnit, PlayerS
 
 def index(request):
     try:
-        guilds = Guild.objects.filter(active=True)
+        guilds = Guild.objects.filter(active=True).order_by('name')
         if not guilds:
             raise Http404("No active guilds")
     except Guild.DoesNotExist:
         raise Http404("Guild does not exist")
+    # рассчитать среднюю мощь гильдии
+    for guild in guilds:
+        if guild.members:
+            guild.__dict__['avg_power'] = guild.total_power // guild.members
+        else:
+            guild.__dict__['avg_power'] = 0
+
     return render(request, 'manager/index.html', {'guilds': guilds})
 
 
@@ -53,9 +60,39 @@ def player(request, player_id):
     return render(request, 'manager/player.html', {'player': player, 'squads': data, 'required_units': required_units[player]})
 
 
-def squads(request):
+def squads_all(request):
     squads = Squad.objects.all()
-    return render(request, 'manager/squads.html', {'squads': squads})
+
+    # Сгруппировать по типу
+    grouping = ['raid-sith', 'raid-aat', 'raid-rancor', 'arena', 'lstb', 'dstb', 'tw-offense', 'tw-defense', 'other']
+    grouped_squads = []
+    for group in grouping:
+        for squad in squads:
+            if squad.category == group:
+                grouped_squads.append(squad)
+
+    return render(request, 'manager/squads.html', {'squads': grouped_squads})
+
+
+def squads(request, guild_id):
+    try:
+        guild = Guild.objects.get(guild_id=guild_id)
+    except Guild.DoesNotExist:
+        raise Http404("Guild does not exist")
+
+    squads = Squad.objects.all().order_by('name')
+    for squad in squads:
+        squad.count_useful_for_guild(guild)
+
+    # Сгруппировать по типу
+    grouping = ['raid-sith', 'raid-aat', 'raid-rancor', 'arena', 'lstb', 'dstb', 'tw-offense', 'tw-defense', 'other']
+    grouped_squads = []
+    for group in grouping:
+        for squad in squads:
+            if squad.category == group:
+                grouped_squads.append(squad)
+
+    return render(request, 'manager/squads.html', {'squads': grouped_squads, 'guild': guild})
 
 
 def _make_squad_query(squad):
@@ -93,7 +130,32 @@ def squad_json(request, squad_id):
 
 def squad(request, squad_id):
     try:
-        guild = Guild.objects.filter(active=True)[0]
+        squad = Squad.objects.get(pk=squad_id)
+        # список заданий на прокачку
+        required_units = {}
+        for ru in RequiredUnit.objects.filter(_make_squad_query(squad)):
+            if not required_units.get(ru.player):
+                required_units[ru.player] = [ru]
+            else:
+                required_units[ru.player].append(ru)
+        # данные по отряду со всех активных гильдий
+        data = {}
+        for guild in Guild.objects.filter(active=True):
+            guild_data = squad.populate_units(guild=guild, required_units=required_units, can_require=request.user.is_authenticated)
+            data.update(guild_data)
+
+        # Отсортировать по мощи пачки
+        sorted_data = sorted(data.values(), key=lambda k: k['power'], reverse=True)
+        can_require = request.user.is_authenticated
+    except Squad.DoesNotExist:
+        raise Http404("Squad does not exist")
+    return render(request, 'manager/squad.html', {'squad': squad, 'units': sorted_data,
+        'required_units': [ru for values in required_units.values() for ru in values]})
+
+
+def squad_for_guild(request, squad_id, guild_id):
+    try:
+        guild = Guild.objects.get(guild_id=guild_id)
         squad = Squad.objects.get(pk=squad_id)
         # список заданий на прокачку
         required_units = {}
@@ -108,7 +170,7 @@ def squad(request, squad_id):
         sorted_data = sorted(data.values(), key=lambda k: k['power'], reverse=True)
         can_require = request.user.is_authenticated
     except Guild.DoesNotExist:
-        raise Http404("No active guild")
+        raise Http404("Guild does not exist")
     except Squad.DoesNotExist:
         raise Http404("Squad does not exist")
     return render(request, 'manager/squad.html', {'guild': guild, 'squad': squad, 'units': sorted_data,
@@ -124,33 +186,6 @@ def require_unit(request, player_id, character_id):
     except Character.DoesNotExist:
         raise Http404("Character does not exist")
     return render(request, 'manager/character.html', {'character': character})
-
-
-def rancor(request, guild_id):
-    try:
-        solo = Character.objects.get(base_id='HANSOLO')
-        guild = Guild.objects.filter(guild_id=guild_id)[0]
-        players = Player.objects.filter(guild=guild)
-        units = Unit.objects.filter(character=solo, player__in=players)
-        rancor = []
-        norancor = []
-        for player in players:
-            matches = [u for u in units if u.player == player]
-            if matches:
-                unit = matches[0]
-                if unit.rarity == 7:
-                    rancor.append({'player': player, 'rarity': unit.rarity, 'level': unit.level, 'gear_level': unit.gear_level, 'power': unit.power})
-                else:
-                    norancor.append({'player': player, 'rarity': unit.rarity, 'level': unit.level, 'gear_level': unit.gear_level, 'power': unit.power})
-            else:
-                norancor.append({'player': player, 'rarity': 0, 'level': 0, 'gear_level': 0, 'power': 0})
-    except Character.DoesNotExist:
-        raise Http404("Han Solor character not found")
-    except Guild.DoesNotExist:
-        raise Http404("Guild does not exist")
-    return render(request, 'manager/rancor.html', {'guild': guild, 'players': players, 'units': units,
-        'rancor': sorted(rancor, key=lambda k: k['power'], reverse=True),
-        'norancor': sorted(norancor, key=lambda k: k['power'], reverse=True)})
 
 
 def stats(request, guild_id):

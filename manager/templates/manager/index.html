@@ -1,15 +1,21 @@
 
+{% load humanize %}
 {% load static %}
+{% static "manager" as baseUrl %}
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
-<h1>SWGOH Guild Manager / {{ guild.name }}</h1>
+<h1>SWGOH Guild Manager</h1>
 {% for guild in guilds %}
+  <img src="{{ baseUrl }}/images/{{ guild.image }}" style="display: block; float: left; margin: 10px" class="icon" />
   <h2>{{ guild.name }}</h2>
-  <p><a href="{{ guild.url }}" target="_blank" rel="noopener noreferrer">Смотреть на SWGOH.GG</a></p>
-  <p><a href="{% url 'players' guild.guild_id %}">Список игроков</a></p>
-  <p><a href="{% url 'rancor' guild.guild_id %}">Готовность РХана</a></p>
+  <p><a href="{{ guild.url }}" target="_blank" rel="noopener noreferrer">Смотреть на SWGOH.GG</a>
+    | <a href="{% url 'players' guild.guild_id %}">Список игроков</a>
+    | <a href="{% url 'stats' guild.guild_id %}">Прогресс прокачки</a>
+    | <a href="{% url 'squads' guild.guild_id %}">Готовность отрядов</a></p>
+  <p>Количество игроков: {{ guild.members }} | Совокупная мощь: {{ guild.total_power|intcomma }}
+    | Средняя мощь: {{ guild.avg_power|intcomma }}</p>
   <hr>
 {% endfor %}
 
-<p><a href="{% url 'squads' %}">Список отрядов на прокачку</a></p>
+<p><a href="{% url 'squads_all' %}">Список отрядов на прокачку</a></p>

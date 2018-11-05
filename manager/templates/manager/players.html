@@ -2,7 +2,8 @@
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
 <h1>Готовность игроков / {{ guild.name }}</h1>
-<p><a href="{% url 'index' %}">На главную</a> | <a href="{% url 'squads' %}">Список отрядов</a></p>
+<p><a href="{% url 'index' %}">На главную</a> | <a href="{% url 'squads' guild.guild_id %}">Готовность отрядов</a>
+  | <a href="{% url 'stats' guild.guild_id %}">Прогресс прокачки</a></p>
 <table border=1 width="100%">
   <thead>
     <td>#</td>

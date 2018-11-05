@@ -3,8 +3,8 @@
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
-<h1>Отряд: {{ squad.name }} [{{ squad.category }}] / {{ guild.name }}</h1>
-<p><a href="{% url 'squads' %}">&lt;&lt;&lt; вернуться к списку</a> | <a href="{% url 'index' %}">На главную</a></p>
+<h1>Отряд: {{ squad.name }} [{{ squad.category }}]{% if guild %} / {{ guild.name }}{% endif %}</h1>
+<p><a href="{% if guild %}{% url 'squads' guild.guild_id %}{% else %}{% url 'squads_all' %}{% endif %}">&lt;&lt;&lt; вернуться к списку</a> | <a href="{% url 'index' %}">На главную</a></p>
 <p>{{ squad.description }}</p>
 <table border=1 width="100%" class="centered">
     <thead>

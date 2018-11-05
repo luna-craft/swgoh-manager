@@ -6,6 +6,9 @@ class Guild(models.Model):
     guild_id = models.IntegerField(default=0)      # идентификатор гильдии на swgoh.gg
     name = models.CharField(max_length=200, default='')        # наименование гильдии
     url = models.CharField(max_length=200, default='')         # ссылка на свгох
+    image = models.CharField(max_length=200, default='')       # значок гильдии
+    members = models.IntegerField(default=0)                   # количество игроков
+    total_power = models.IntegerField(default=0)               # общая ГМ
     active = models.BooleanField(default=True)     # требуется обновлять данные
     description = models.CharField(max_length=300, default='') # примечание
     def __str__(self):
@@ -74,7 +77,7 @@ class Squad(models.Model):
             ('dstb', 'Темные территориальные битвы'),
             ('tw-offense', 'Войны гильдий: Атака'),
             ('tw-defense', 'Войны шильдий: Защита'),
-            )
+        )
     category = models.CharField(max_length=50, choices=SQUAD_CATEGORY, default='other')
     description = models.TextField(blank=True)
     char1 = models.ForeignKey(Character, related_name='char1', verbose_name='Character 1', blank=True, null=True, on_delete=models.SET_NULL)
@@ -82,7 +85,9 @@ class Squad(models.Model):
     char3 = models.ForeignKey(Character, related_name='char3', verbose_name='Character 3', blank=True, null=True, on_delete=models.SET_NULL)
     char4 = models.ForeignKey(Character, related_name='char4', verbose_name='Character 4', blank=True, null=True, on_delete=models.SET_NULL)
     char5 = models.ForeignKey(Character, related_name='char5', verbose_name='Character 5', blank=True, null=True, on_delete=models.SET_NULL)
-    total_useful = models.IntegerField(default=0) # количество годных пачек для ВГ
+    total_useful = models.IntegerField(default=0)    # количество годных пачек для ВГ
+    players = models.ManyToManyField(Player)         # список годных игроков
+
     def __str__(self):
         return "%s - %s [%s, %s, %s, %s, %s]" % (self.name, self.category, self.char1, self.char2, self.char3, self.char4, self.char5)
 
@@ -206,9 +211,18 @@ class Squad(models.Model):
                 unit['useful'] = self._check_required(unit)
         return data
 
+    def count_useful_for_guild(self, guild):
+        # подсчет количества полезных отрядов в гильдии
+        self.total_useful_guild = self.players.filter(guild=guild).count()
+        return self.total_useful_guild
+
+    @classmethod
+    def count_useful_for_player(player):
+        # подсчет количества полезных отрядов для игрока
+        return player.squad_set.all().count()
+
     class Meta:
         ordering = ['name']
-
 
 # Планы на прокачку по игрокам
 class RequiredUnit(models.Model):
@@ -234,4 +248,3 @@ class PlayerStat(models.Model):
         ordering = ['-week', 'player__player_name']
     def __str__(self):
         return "%s @ %s - %d energy, %d power, %d chars" % (self.player.player_name if self.player else '---', self.week, self.total_energy, self.total_power, self.total_chars)
-

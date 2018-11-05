@@ -6,26 +6,27 @@ import cssselect
 import datetime
 import shutil
 import os.path
+from django.db import connection
 from .models import *
 
 
-def save_char_image(char):
-    fname = "static/manager/images/" + char.image
+def update_image(image, base_url='http://swgoh.gg/static/img/assets/tex.charui_'):
+    fname = "static/manager/images/" + image
 
     # проверить что картинка уже есть
     if os.path.isfile(fname):
         return False
 
     # обновить картинку
-    with requests.get('http://swgoh.gg/static/img/assets/tex.charui_' + char.image, stream=True) as response:
+    with requests.get(base_url + image, stream=True) as response:
         if response.status_code == 200:
             with open(fname, 'wb') as f:
                 response .raw.decode_content = True
                 shutil.copyfileobj(response.raw, f)
-            print("Сохранен значок персонажа " + char.base_id)
+            print("Сохранен значок " + image)
             return True
         else:
-            print("Ошибка получения персонажа %s - %d" % (char.base_i, response.status_code))
+            print("Ошибка получения значка %s - %d" % (image, response.status_code))
 
     return False
 
@@ -42,7 +43,7 @@ def update_character_database():
     for idx, c in enumerate(json_data):
         char, created = Character.objects.update_or_create(base_id=c['base_id'], defaults={'base_id': c['base_id'], 'name': c['name'],
             'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][40:], 'combat_type': c['combat_type']})
-        save_char_image(char)
+        update_image(char.image)
         if created:
             char_added = char_added + 1
         else:
@@ -54,7 +55,7 @@ def update_character_database():
     for c in json_data:
         char, created = Character.objects.update_or_create(base_id=c['base_id'], defaults={'base_id': c['base_id'], 'name': c['name'],
             'power': c['power'], 'description': c['description'], 'url': c['url'], 'image': c['image'][40:], 'combat_type': c['combat_type']})
-        save_char_image(char)
+        update_image(char.image)
         if created:
             ship_added = ship_added + 1
         else:
@@ -76,6 +77,15 @@ def update_guild(guild):
     players = json_data['players']
     characters = Character.objects.all()
     count = len(players)
+
+    guild_data = json_data['data']
+    if (guild.name != guild_data['name']) or (guild.total_power != guild_data['galactic_power']) or (guild.members != guild_data['member_count']):
+        guild.name = guild_data['name']
+        guild.total_power = guild_data['galactic_power']
+        guild.members = guild_data['member_count']
+        guild.save()
+    update_image(guild.image, 'http://swgoh.gg/static/img/assets/tex.guild_')
+
     print("Загрузка данных завершена, начинаю сопоставление, всего игроков для обновления - %d" % count)
     current = 0
     players_added = 0
@@ -159,14 +169,18 @@ def update_squads_totals():
                 data = squad.populate_units(guild)
                 # Отфильтровать по мощи
                 squad.total_useful = squad.total_useful + len([v for v in data.values() if v['useful']])
+                # Обновить список полезных
+                for row in data.values():
+                    if row['useful'] and (row['player'] != None):
+                        squad.players.add(row['player'])
+                    elif row['player'] != None:
+                        squad.players.remove(row['player'])
         squad.save()
         print("Обновлена пачка %s, всего полезных - %d" % (squad, squad.total_useful))
 
 
 def get_week(date):
-    """Return the full week (Sunday first) of the week containing the given date.
-    'date' may be a datetime or date instance (the same type is returned).
-    """
+    """Возвращает первый день недели на указанную дату"""
     day_idx = date.weekday()
     monday = date - datetime.timedelta(days=day_idx)
     return datetime.datetime.date(monday)
@@ -181,6 +195,7 @@ def update_players_totals(guild):
         for unit in Unit.objects.filter(player=player):
             player.total_power = player.total_power + unit.power
             player.total_chars = player.total_chars + 1
+        player.total_useful = player.squad_set.count()
         print("Обновлена статистика по игроку %s - power = %d, chars = %d" % (player, player.total_power, player.total_chars))
         player.save()
         # теперь записать статистику
@@ -194,6 +209,20 @@ def update_players_totals(guild):
         else:
             stat = PlayerStat(player=player, week=week, total_power=player.total_power, total_chars=player.total_chars)
             stat.save()
+
+
+def update_required_units():
+    # Удалить планы на прокачку по тем юнитам, которые уже выполнены
+    deleted = 0
+    rows = RequiredUnit.objects.raw("""SELECT ru.id FROM manager_requiredunit ru JOIN manager_unit u
+            ON ru.character_id = u.character_id AND ru.player_id = u.player_id
+            WHERE ru.gear_level <= u.gear_level AND ru.rarity <= u.rarity""")
+    for ru in rows:
+        deleted = deleted + 1
+        print(f"[{deleted}] Удаляю выполненный план прокачки {ru.player.player_name} - {ru.character.name}")
+        ru.delete()
+    total = RequiredUnit.objects.count()
+    print(f"***** Удалено выполненных планов на прокачку: {deleted}. Осталось запланированно: {total}")
 
 
 def update_guilds():

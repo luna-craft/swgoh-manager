@@ -2,8 +2,13 @@
 {% static "manager" as baseUrl %}
 <link rel="stylesheet" type="text/css" href="{% static 'manager/style.css' %}" />
 
-<h1>Отряды</h1>
-<p><a href="{% url 'index' %}">На главную</a></p>
+<h1>Готовность отрядов{% if guild %} / {{ guild.name }}{% endif %}</h1>
+<p><a href="{% url 'index' %}">На главную</a>
+{% if guild %}
+  | <a href="{% url 'players' guild.guild_id %}">Список игроков</a>
+  | <a href="{% url 'stats' guild.guild_id %}">Прогресс прокачки</a>
+{% endif %}
+</p>
 <table border=1 width="100%" class="centered">
 	<thead>
 		<td>Название</td>
@@ -17,15 +22,15 @@
 	</thead>
 	<tbody>
 		{% for squad in squads %}
-		<tr {% if squad.total_useful %}class = "useful"{% else %}class = "nonuseful"{% endif%}>
-			<td><a href="{% url 'squad' squad.id %}">{{ squad.name }}</a></td>
+		<tr {% if guild and squad.total_useful_guild or not guild and squad.total_useful %}class = "useful"{% else %}class = "nonuseful"{% endif%}>
+			<td><a href="{% if guild %}{% url 'squad_for_guild' squad.id guild.guild_id %}{% else %}{% url 'squad' squad.id %}{% endif %}">{{ squad.name }}</a></td>
 			<td>{{ squad.category }}</td>
 			<td>{% if squad.char1 %}<img src="{{ baseUrl }}/images/{{ squad.char1.image }}" class="icon"><br>{{ squad.char1 }}{% else %}&nbsp;{% endif %}</td>
 			<td>{% if squad.char2 %}<img src="{{ baseUrl }}/images/{{ squad.char2.image }}" class="icon"><br>{{ squad.char2 }}{% else %}&nbsp;{% endif %}</td>
 			<td>{% if squad.char3 %}<img src="{{ baseUrl }}/images/{{ squad.char3.image }}" class="icon"><br>{{ squad.char3 }}{% else %}&nbsp;{% endif %}</td>
 			<td>{% if squad.char4 %}<img src="{{ baseUrl }}/images/{{ squad.char4.image }}" class="icon"><br>{{ squad.char4 }}{% else %}&nbsp;{% endif %}</td>
 			<td>{% if squad.char5 %}<img src="{{ baseUrl }}/images/{{ squad.char5.image }}" class="icon"><br>{{ squad.char5 }}{% else %}&nbsp;{% endif %}</td>
-			<td>{{ squad.total_useful }}</td>
+			<td>{% if guild %}{{ squad.total_useful_guild }}{% else %}{{ squad.total_useful }}{% endif %}</td>
 		</tr>
 		{% endfor %}
 	</tbody>
