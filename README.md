@@ -23,6 +23,7 @@ cd swgoh-manager
 # Создаём виртуальное окружение и ставим зависимости
 python3.6 -m venv venv
 source ./venv/bin/activate
+# На данный момент есть проблема установки телеграм бота, так как отсутсвтует репозитрий django-telegrambot
 pip install -r requerements.txt
 ```
 
